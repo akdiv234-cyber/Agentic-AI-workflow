@@ -1,0 +1,377 @@
+{
+  "name": "RAG Report",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate a comprehensive Monthly Financial Standing Report for September 2024 based on system instructions.",
+        "options": {
+          "systemMessage": "You are a retrieval-augmented assistant for NovaCart.\n\nThe primary objective is to generate a comprehensive Monthly Financial Standing Report by the 1st of every month. This report must provide leadership with a clear, data-driven snapshot of NovaCart’s performance relative to the broader market, enabling them to make faster and more informed strategic decisions.\nCorrelate internal performance with external market conditions to produce a structured summary for leadership.\n\nYOU MUST FOLLOW THIS PROCEDURE FOR EVERY NON-GREETING USER MESSAGE:\n\nStep 1) ALWAYS call the tool \"Nova Pinecone Internal Vector Index\" exactly once before generating the report.\n- Do NOT generate report yet.\n\nStep 2) ALWAYS call the web search tool exactly once before generating the report.\n- Do NOT generate report yet.\n\nStep 3) Read the tool results.\n- If the result is empty OR does not contain the requested metric/timeframe, you MUST reply EXACTLY:\n\"I’m sorry, I don’t have that information in my knowledge base. Please try asking a different question.\"\n\nStep 4) If the tool results contains relevant information:\n- Generate a executive style leadership report which comprises of internal data/observations, external data/trends, insights for leadership.\n- Send out a nicely formatted HTML email using the GMail tool\n\nSometimes you might be asked to do comparison with other products from other vendors. In those cases use the built in Web Search Tool to accomplish that.\n\nOUTPUT RULES (final response):\n- Output ONLY the user-facing answer text.\n- NEVER mention tools, retrieval, search, “used tools”, logs, inputs, outputs, metadata, or reasoning.\n- You are forbidden from printing anything like: [Used tools: ...].\n\nEXCEPTION:\n- If the user message is only a greeting/small talk (e.g., “hi”, “hello”, “how are you”), do not call the tool; respond politely.\n",
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "dc8d46bc-a8e6-4d23-b185-41b4eceaece1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "3efef6cf-e967-42c5-aedd-51262a92ca7b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "session-id"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        208
+      ],
+      "id": "1d5cb7a4-29eb-4e3b-b6a7-7bbb27524e0d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        368
+      ],
+      "id": "b1f20289-3bd4-4850-b964-8dbf8a85c849",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        512,
+        384
+      ],
+      "id": "daca7d07-b824-45fb-84a2-03ad6696a47d",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "5NcxSd3xvuBwkUJQ",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call this tool when you need information on internal company data on products, metrics, sales, revenues.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "novacare-26-sep",
+          "mode": "list",
+          "cachedResultName": "novacare-26-sep"
+        },
+        "useReranker": true,
+        "options": {
+          "pineconeNamespace": "internal"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        208
+      ],
+      "id": "17d2057a-bcb7-422a-a972-91d795e25eb4",
+      "name": "Nova Pinecone Internal Vector Index",
+      "credentials": {
+        "pineconeApi": {
+          "id": "xS29NaUpNt5S0ZUq",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        432
+      ],
+      "id": "3eb7eeb4-6279-418f-aaa7-e24bffdeb3a4",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        864,
+        448
+      ],
+      "id": "2aa5dcc2-c2d7-49dc-a63e-22225cc671b5",
+      "name": "Reranker Cohere1",
+      "credentials": {
+        "cohereApi": {
+          "id": "5NcxSd3xvuBwkUJQ",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call this tool to get external market data about where the industry is headed, market trends and competitor products and status.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "novacare-26-sep",
+          "mode": "list",
+          "cachedResultName": "novacare-26-sep"
+        },
+        "useReranker": true,
+        "options": {
+          "pineconeNamespace": "external"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        224
+      ],
+      "id": "18cf6436-b0c8-41a6-94fb-38dbc91be0b0",
+      "name": "Nova Pinecone External Vector Index",
+      "credentials": {
+        "pineconeApi": {
+          "id": "xS29NaUpNt5S0ZUq",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        16,
+        0
+      ],
+      "id": "2f1403b2-bf80-4172-bd9b-619e1442cfc8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "aravindbharathykk@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        208
+      ],
+      "id": "dfef8721-68ac-4094-bdd6-9f4231e710ec",
+      "name": "Send a message in Gmail",
+      "webhookId": "bac3802c-2f6b-4fa7-9bbc-871d32a712b5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RMz7IZhxmXtZsXzh",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Nova Pinecone Internal Vector Index",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Nova Pinecone Internal Vector Index",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Nova Pinecone Internal Vector Index": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Nova Pinecone External Vector Index",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere1": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Nova Pinecone External Vector Index",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nova Pinecone External Vector Index": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c67a0122-90d3-433c-a5e8-d23dd172db85",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f853eb51f93a6f600900aba1d1cc53644ab536b5903620f5919970601ed2bc18"
+  },
+  "nodeGroups": [],
+  "id": "fCJTHjteJxmszspw",
+  "tags": []
+}
